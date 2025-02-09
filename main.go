@@ -36,10 +36,19 @@ func main() {
 	maskedKey := fmt.Sprintf("***%s", apiKey[len(apiKey)-4:])
 	fmt.Printf("Got API key %s from %s\n", maskedKey, apiKeySource)
 
+	// Get model name from environment variable or use default
+	model := os.Getenv("OPENAI_API_MODEL")
+	if model == "" {
+		model = "gpt-4o-mini" // Default model if none is specified
+		fmt.Println("Using default model: gpt-4o-mini (no model found in .env file or environment variable)")
+	} else {
+		fmt.Printf("Using model: %s\n", model)
+	}
+
 	// Prepare the request body
 	requestBody := map[string]interface{}{
-		"model": "gpt-4o-mini", // The model name
-		"store": true,          // Optional parameter (if supported by the API)
+		"model": model, // The model name from env var or default
+		"store": true,  // Optional parameter (if supported by the API)
 		"messages": []map[string]string{
 			{"role": "user", "content": "write a haiku about ai"},
 		},
