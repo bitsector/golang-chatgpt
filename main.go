@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io"
 	"log"
@@ -15,15 +16,25 @@ import (
 const apiEndpoint = "https://api.openai.com/v1/chat/completions"
 
 func main() {
+	// Define a flag for user input
+	var userContent string
+	flag.StringVar(&userContent, "c", "", "Content for the request")
+	flag.Parse()
 
+	// Check if user content is provided
+	if userContent == "" {
+		log.Fatalf("No content provided. Use -c flag to specify the content, e.g., go run main.go -c \"your request here\"")
+	}
+
+	// Get API key and model configuration
 	apiKey, model := getConfig()
 
-	// Prepare the request body
+	// Prepare the request body using user-provided content
 	requestBody := map[string]interface{}{
 		"model": model, // The model name from env var or default
 		"store": true,  // Optional parameter (if supported by the API)
 		"messages": []map[string]string{
-			{"role": "user", "content": "write a haiku about ai"},
+			{"role": "user", "content": userContent},
 		},
 	}
 
@@ -49,7 +60,7 @@ func main() {
 	}
 	defer resp.Body.Close()
 
-	// Read and process the response using io.ReadAll (modern replacement for ioutil.ReadAll)
+	// Read and process the response using io.ReadAll
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Fatalf("Error reading response body: %v", err)
@@ -79,8 +90,8 @@ func main() {
 	log.Fatalf("Unexpected response structure: %s", string(body))
 }
 
+// getConfig retrieves API key and model name from environment variables or defaults.
 func getConfig() (string, string) {
-	// Flag to track the source of the API key
 	apiKeySource := "environment variable"
 
 	// Load environment variables from .env file (optional)
@@ -91,17 +102,14 @@ func getConfig() (string, string) {
 		log.Println("No .env file found, proceeding with existing environment variables")
 	}
 
-	// Get API key from environment variable
 	apiKey := os.Getenv("OPENAI_API_KEY")
 	if apiKey == "" {
 		log.Fatalf("API key not found in environment variables. Please set OPENAI_API_KEY.")
 	}
 
-	// Print the source and masked API key
 	maskedKey := fmt.Sprintf("***%s", apiKey[len(apiKey)-4:])
 	fmt.Printf("Got API key %s from %s\n", maskedKey, apiKeySource)
 
-	// Get model name from environment variable or use default
 	model := os.Getenv("OPENAI_API_MODEL")
 	if model == "" {
 		model = "gpt-4o-mini" // Default model if none is specified
@@ -111,5 +119,4 @@ func getConfig() (string, string) {
 	}
 
 	return apiKey, model
-
 }
