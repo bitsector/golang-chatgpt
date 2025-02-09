@@ -15,9 +15,14 @@ import (
 const apiEndpoint = "https://api.openai.com/v1/chat/completions"
 
 func main() {
+	// Flag to track the source of the API key
+	apiKeySource := "environment variable"
+
 	// Load environment variables from .env file (optional)
 	err := godotenv.Load()
-	if err != nil {
+	if err == nil {
+		apiKeySource = ".env file" // If .env is loaded successfully, assume key might come from there
+	} else {
 		log.Println("No .env file found, proceeding with existing environment variables")
 	}
 
@@ -26,6 +31,10 @@ func main() {
 	if apiKey == "" {
 		log.Fatalf("API key not found in environment variables. Please set OPENAI_API_KEY.")
 	}
+
+	// Print the source and masked API key
+	maskedKey := fmt.Sprintf("***%s", apiKey[len(apiKey)-4:])
+	fmt.Printf("Got API key %s from %s\n", maskedKey, apiKeySource)
 
 	// Prepare the request body
 	requestBody := map[string]interface{}{
