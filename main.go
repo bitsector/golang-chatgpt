@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -76,8 +76,8 @@ func main() {
 	}
 	defer resp.Body.Close()
 
-	// Read and process the response
-	body, err := ioutil.ReadAll(resp.Body)
+	// Read and process the response using io.ReadAll (modern replacement for ioutil.ReadAll)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Fatalf("Error reading response body: %v", err)
 	}
