@@ -74,5 +74,16 @@ func main() {
 		log.Fatalf("Error unmarshaling response JSON: %v", err)
 	}
 
-	fmt.Printf("Response from ChatGPT:\n%s\n", result)
+	// Extract and print only the content field
+	if choices, ok := result["choices"].([]interface{}); ok && len(choices) > 0 {
+		firstChoice := choices[0].(map[string]interface{})
+		if message, ok := firstChoice["message"].(map[string]interface{}); ok {
+			if content, ok := message["content"].(string); ok {
+				fmt.Printf("Response from ChatGPT:\n%s\n", content)
+				return
+			}
+		}
+	}
+
+	log.Fatalf("Unexpected response structure: %s", string(body))
 }
